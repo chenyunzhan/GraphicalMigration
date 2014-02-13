@@ -1,0 +1,287 @@
+select * from e_shelf a where a.shelf_name = '326传输-接入设备架-02';
+
+
+select b.map_id from e_shelf a left join e_mi_store b on a.shelf_id = b.mis_id where a.shelf_name = '326传输-接入设备架-02';
+
+
+select c.* from e_mi_store a inner join e_shelf b on b.shelf_id = a.mis_id and b.shelf_name = '326传输-接入设备架-02' 
+inner join e_mi_shelf_panel c on a.map_id = c.map_id;
+
+
+
+select * from e_mi_equ_panel a where a.map_id = 326779;
+
+select f.*
+  from E_mi_store a, e_shelf b, e_mi_shelf_panel c,v_e_equip_frame d,E_mi_store e,e_mi_equ_panel f
+ where a.mis_id = b.shelf_id
+   and c.map_id = a.map_id
+   and c.layer_name='模块'
+   and c.mis_id=d.frame_id
+   and d.frame_id=e.mis_id
+   and e.map_id=f.map_id
+   and b.shelf_name = '326传输-接入设备架-02'
+   
+   
+select * from e_mi_equ_panel where map_id=326779 and slot_type != ' ' order by  to_number(slot_type)
+select * from e_mi_equ_panel where map_id=326779 and slot_type != ' ' and layer_name='插槽' order by  to_number(slot_type);
+select * from e_mi_equ_panel where map_id=326779 and slot_type != ' ' group by layer_name
+
+
+
+--插槽
+Select "OBJECT_ID","MAP_ID","LAYER_NAME","MIS_ID","ROW_NO","COL_NUM","LABELSTR","SLOT_TYPE","SLOT_LABEL","CARD_TYPE","CARD_LABEL","MI_SYMBOLOGY","MI_PRINX","CARD_TYPE_ID","CITY_ID","OBJECT"
+From "ZYGL"."E_MI_EQU_PANEL"
+Where ("MAP_ID" = 326779) and ("LAYER_NAME" = '插槽') and ("SLOT_TYPE" <> ' ')
+
+Select "OBJECT_ID","MAP_ID","LAYER_NAME","MIS_ID","ROW_NO","COL_NUM","LABELSTR","SLOT_TYPE","SLOT_LABEL","CARD_TYPE","CARD_LABEL","MI_SYMBOLOGY","MI_PRINX","CARD_TYPE_ID","CITY_ID","OBJECT"
+From "ZYGL"."E_MI_EQU_PANEL"
+Where ("MAP_ID" = 326779) and ("LAYER_NAME" = '板卡') and ("SLOT_TYPE" <> ' ')
+
+
+
+
+
+select * from t_mi_system_points a where a.
+select * from t_mi_system_region b where b.topo_name like '%枣庄新城中兴环网2.5G/OF2.5G%'
+
+
+--.geoloc.sdo_ordinates 
+select * from t_mi_system_region b where b.topo_name like '%枣庄新城中兴环网2.5G/OF2.5G%'
+
+
+select INSTANCE_NAME from v$instance;
+
+
+select * from t_mi_system_region b, table(b.geoloc.sdo_ordinates) e where b.topo_name like '%枣庄新城中兴环网2.5G/OF2.5G%' 
+
+
+
+select wm_concat(e.COLUMN_VALUE), c.record_id, c.topo_name from t_mi_system_region c, table(c.geoloc.sdo_ordinates) e where c.topo_name like '%枣庄新城中兴环网2.5G/OF2.5G%'  group by c.record_id,c.topo_name
+
+
+老系统拓扑
+select wm_concat(e.COLUMN_VALUE) points, c.record_id, c.topo_name from t_mi_system_region c, table(c.geoloc.sdo_ordinates) e where c.topo_name like '%枣庄新城中兴环网2.5G/OF2.5G%'  group by c.record_id,c.topo_name
+
+select * from t_mi_system_region b, table(b.geoloc.sdo_ordinates) e where b.topo_name like '%枣庄新城中兴环网2.5G/OF2.5G%' 
+
+select * from t_mi_system_points a where a.topo_name like '%枣庄新城中兴环网2.5G/OF2.5G%' 
+
+
+select a.geoloc.SDO_POINT.x X, a.geoloc.SDO_POINT.y Y , a.point_misid from t_mi_system_points a where a.topo_name like '%枣庄新城中兴环网2.5G/OF2.5G%' 
+
+select a.geoloc.SDO_POINT.x X, a.geoloc.SDO_POINT.y Y , a.point_misid, a.topo_name from t_mi_system_points a where a.topo_name like '%滕州本地网东北环三2.5G/OF2.5G%' 
+
+select min(a.geoloc.SDO_POINT.x) minx from t_mi_system_points a where a.topo_name like '%枣庄新城中兴环网2.5G/OF2.5G%' 
+
+select max(a.geoloc.SDO_POINT.y) maxy from t_mi_system_points a where a.topo_name like '%枣庄新城中兴环网2.5G/OF2.5G%' 
+
+
+select * from t_tran_system x where x.tsystem_no like '%枣嘉汇大厦%'
+
+
+目标数据数据拓扑
+
+SELECT * FROM t_rm_topo_inst_point AS a WHERE a.TOPO_INSTANCE_ID = 582
+
+#SELECT * FROM t_rm_topo_inst_line AS a WHERE a.`NAME` LIKE "%SDH传输系统-LQ（山东省济南市济南商河局站A类长途传输机房-大明湖畔的大机房)%";
+SELECT * FROM t_rm_topo_inst_point AS b WHERE b.`NAME` LIKE "%SDH-LQ000%";
+
+SELECT * FROM t_rm_topo_inst_point AS b WHERE b.`NAME` LIKE "%SDH-LQ001%";
+
+SELECT * FROM t_rm_topo_inst_point AS b WHERE b.`NAME` LIKE "%SDH-大明湖畔的大机房_华为_Optix 10G_1%" AND b.POS_X IS NOT NULL;
+
+SELECT * FROM t_rm_topo_inst_point AS b WHERE b.`NAME` LIKE "%SDH-链路数字机房_华为_Optix 2500 _1%" AND b.POS_X IS NOT NULL;
+
+SELECT * FROM t_rm_topo_inst_point AS b WHERE b.`NAME` LIKE "%SDH-历下一干机房_华为_Optix 2500+_1%" AND b.POS_X IS NOT NULL;
+
+
+
+
+
+SELECT * FROM mapinfo AS a WHERE a.type = '"板卡"';
+
+SELECT * FROM mapinfo AS a WHERE a.type = '"插槽"' AND a.x IS NOT NULL ORDER BY y, x
+
+SELECT count(*) FROM mapinfo AS a WHERE a.type = '"插槽"' AND a.x IS NOT NULL GROUP BY y
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+华丽的分隔线*********************************************************************************
+
+新系统的一个机架-机框-槽道-板卡的sql
+
+##硬件表
+SELECT * FROM T_RM_PHYSICAL_DEVICE a WHERE a.PHYSICAL_DEVICE_NAME = '济南共青团2层/长长中继SDH2.5G(北12-05-02)';
+
+
+##物理设备与硬件关联
+SELECT * FROM T_RM_PHY_DEVICE_HARDWARE_REL a WHERE a.PHYSICAL_DEVICE_ID = 200002106;
+
+
+##机框
+SELECT * FROM t_rm_shelf a WHERE a.SHELF_ID=200000157;
+
+
+##机架
+SELECT * FROM t_rm_rack a WHERE a.RACK_ID = 200000068;
+
+
+##所有的板卡
+SELECT * FROM t_rm_card a WHERE a.SHELF_ID = 200000157;
+
+##所有的槽道
+SELECT * FROM t_rm_slot a WHERE a.SHELF_ID = 200000157;
+
+
+老系统的sql
+select * from e_shelf a where a.shelf_no like '%济南共青团2层传输/S北12-05%'
+
+select b.map_id from e_shelf a left join e_mi_store b on a.shelf_id = b.mis_id where a.shelf_name = '济南共青团2层/济南长长中继 I系统155M（北12－05）';
+
+
+
+
+
+
+###############正规的分隔线#########################################################################################
+
+
+
+光缆的相关sql语句
+老系统：
+select * from f_mi_system_points;
+
+select * from F_mi_store;
+
+select * from f_fiber_system;
+
+select * from f_fiber_system a where a.fsystem_no = '高新区沁心园小区-S001GL';
+
+select * from F_mi_store a inner join f_fiber_system b on a.mis_id=b.fsystem_id inner join f_mi_system_points c on a.map_id = c.map_id where b.fsystem_no = '高新区沁心园小区-S001GL';
+
+select c.geoloc.SDO_POINT.x X, c.geoloc.SDO_POINT.y Y , c.point_misid from F_mi_store a inner join f_fiber_system b on a.mis_id=b.fsystem_id inner join f_mi_system_points c on a.map_id = c.map_id where b.fsystem_no = '高新区沁心园小区-S001GL';
+
+
+######################################################################################################
+
+
+传输网的相关sql语句
+老系统：
+select * from t_mi_system_points;
+
+select a.geoloc.SDO_POINT.x X, a.geoloc.SDO_POINT.y Y , a.point_misid, a.topo_name from t_mi_system_points a where a.topo_name = '滕州本地网西北环四2.5G/OF2.5G'
+
+
+####################################################################################################
+
+
+管路的相关sql语句
+老系统：
+select * from mi_workspace where ws_name like '%盘石001GLU%'
+
+select city_id, ws_id from mi_workspace a where a.pipe_long_id is not null;
+
+select * from w_pipe_long x where x.pipe_long_id  = 98198;
+
+select b.layer_name from MI_WS_LAYER b where b.ws_id = 1255;
+
+select * from MAP_ROOM c where c.ws_id = 1255;
+
+select * from Map_Pipe d where d.ws_id = 1255;
+
+select * from Map_Well e where e.ws_id = 1255;
+
+###统计各个地市的有效图的个数。
+select * from (select m.ws_name,m.ws_id,m.pipe_long_id,
+(select count(1) from map_bar b where b.ws_id=m.ws_id) c1,
+(select count(1) from map_well b where b.ws_id=m.ws_id) c2, 
+(select count(1) from MAP_PIPE b where b.ws_id=m.ws_id) c3, 
+(select count(1) from MAP_BAR_SECT b where b.ws_id=m.ws_id) c4, 
+(select count(1) from MAP_ROOM b where b.ws_id=m.ws_id) c5, 
+(select count(1) from MAP_WELL b where b.ws_id=m.ws_id) c6, 
+(select count(1) from MAP_PIPE b where b.ws_id=m.ws_id) c7, 
+(select count(1) from MAP_FIBER_JUNC_NODE b where b.ws_id=m.ws_id) c8, 
+(select count(1) from MAP_WALL_BAR b where b.ws_id=m.ws_id) c9, 
+(select count(1) from MAP_BAR b where b.ws_id=m.ws_id) c10, 
+(select count(1) from MAP_FIBER_SEG b where b.ws_id=m.ws_id) c11, 
+(select count(1) from MAP_BAR_SECT b where b.ws_id=m.ws_id) c12, 
+(select count(1) from MAP_CROSS_BOX b where b.ws_id=m.ws_id) c13, 
+(select count(1) from MAP_OPTICAL_FIBER  b where b.ws_id=m.ws_id) c14, 
+(select count(1) from MAP_FIBER_NODE  b where b.ws_id=m.ws_id) c15, 
+(select count(1) from MAP_WALL_ROUTE b where b.ws_id=m.ws_id) c16, 
+(select count(1) from MAP_CABLE_BOX b where b.ws_id=m.ws_id) c17, 
+(select count(1) from MAP_ROOM b where b.ws_id=m.ws_id) c18, 
+(select count(1) from MAP_FIBER_JOINT b where b.ws_id=m.ws_id) c19, 
+(select count(1) from MAP_FTB b where b.ws_id=m.ws_id) c20 
+ from mi_workspace m  where m.city_id=17) x where x.c1 > 0 or c2 > 0 or c3 > 0 
+ or c4 > 0 or c5 > 0 or c6 > 0 or c7 > 0 or c8 > 0 or c9 > 0 or c10 > 0 or c11 > 0 
+ or c12 > 0 or c13 > 0 or c14 > 0 or c15 > 0 or c16 > 0 or c17 > 0 or c18 > 0 or c19 > 0 or c20 > 0
+
+
+
+#########################################################################################################
+
+
+
+DDN/ATM/IP组网图的相关sql语句
+老系统：
+select * from d_net_topo_point;
+select * from d_net_topo_line;
+select * from d_net_topo a where a.map_name = '互联网/城域网/长清';
+select * from d_net_topo_line b where b.map_id = 80258;
+select * from d_net_topo_point c where c.map_id = 80258;
+
+
+
+#########################################################################################################
+
+
+配纤图的相关sql语句
+老系统：
+光缆拓扑图：(290307)德南-S001GL
+select * from f_fiber_node a where a.fiber_node_no like '%市中市中德胜南街40号001ZDH%';
+select * from f_node_link;
+select * from F_mi_store d where d.mis_id = 520463 and d.city_id = 1 and d.map_type = '配纤图';
+select * from F_mi_node_px c where c.map_id = 577644;
+select * from s_room f where f.room_name = '(290307)德南';
+select * from f_node_link x where x.link_node_id = 577644;
+select * from F_mi_store a inner join f_fiber_system b on a.mis_id=b.fsystem_id inner join f_mi_system_points c on a.map_id = c.map_id where b.fsystem_no = '(290307)德南-S001GL';
+新系统：
+SELECT * FROM t_rm_location AS a WHERE a.LOCATION_NAME LIKE '市中山东省实验中学%';
+SELECT * FROM t_rm_joint_box AS b WHERE b.JOINT_BOX_NAME LIKE '市中山东省实验中学%';
+SELECT * FROM t_rm_physical_device AS b WHERE b.PHYSICAL_DEVICE_NAME LIKE '市中德南26号东墙接头/001GFQ';
+SELECT * FROM T_RM_CABLE_SEGMENT c WHERE c.A_RESOURCE_ID = 200020573 or c.Z_RESOURCE_ID = 200020573;
+SELECT * FROM T_RM_JOINT_BOX x WHERE x.JOINT_BOX_NAME = '市中德南26号东墙接头/001GFQ';
+SELECT * FROM T_RM_OPTICAL_FIBER y where y.CABLE_SEGMENT_ID = 200128126;
+SELECT * FROM T_RM_OPTICAL_FIBER y where y.CABLE_SEGMENT_ID = 200000095;
+
+
+#########################################################################################################
+
+机房相关的sql语句
+新系统
+INSERT t_rm_topo_inst_point(TOPO_INST_POINT_ID, TOPO_INSTANCE_ID, TOPOLOGY_SPEC_LAYER_ID, DEFAULT_STYLE_ATTR_VALUE, AUTO_REFRESH_FLAG, NAME, TOPO_CODE, TIP, POS_X, POS_Y, POS_Z, HEIGHT, WIDTH, LENGTH, POINTS, GROUP_EXPANDED_FLAG, PARENT_TOPO_CODE, RES_OBJECT_TYPE_ENUM_ID, RES_CLASS_REL_ID, RES_CLASS_ID, RES_SHARDING_ID, RES_ID, RES_EXPAND_INFO, MAPPING_TOPO_INSTANCE_ID, CREATED_BY, LAST_UPDATED_BY) values (10113, 1742, 562, '', 0, 'aaaaa', UUID(), '', 111.00000000, 86.00000000, NULL, 13.50000000, 156.50000000, NULL, NULL, 0, '', 44102, -1, 0, 0, 0, 'content.type:vector|vector.shape:rectangle', 0, 0, 0);
+
+老系统
+select a.map_id from e_mi_store a inner join mi_shelf_planform b on a.map_id=b.map_id
+                           inner join s_room c on a.mis_id=c.room_id where c.room_name = '博山区泵业基站7层';
+select * from mi_shelf_planform d inner join e_mi_store e on d.map_id = e.map_id where d.map_id = 750897;
+select f.map_name from e_mi_store f where f.map_id = 750897
+select distinct o.room_name, n.map_id from mi_shelf_planform m 
+                            inner join e_mi_store n on m.map_id = n.map_id 
+                            inner join s_room o on n.mis_id = o.room_id
+                            where m.city_id = 1 and m.map_id <= 421676;
+select a.* from e_mi_store a inner join mi_shelf_planform b on a.map_id=b.map_id
+                           inner join s_room c on a.mis_id=c.room_id where c.room_name = '博山区八陡和平基站3层'
+

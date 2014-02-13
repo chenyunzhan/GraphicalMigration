@@ -1,0 +1,50 @@
+Version 550
+Charset "WindowsSimpChinese"
+Delimiter ","
+CoordSys NonEarth Units "m" Bounds (-2000000, -2000000) (100000000, 1000000000)
+Columns 13
+  OBJ_ID Decimal(18, 0)
+  CITY_ID Decimal(4, 0)
+  MAP_ID Decimal(18, 0)
+  LAYER_NAME Char(20)
+  MIS_ID Decimal(18, 0)
+  ROW_NO Decimal(7, 0)
+  COL_NUM Decimal(7, 0)
+  LABELSTR Char(128)
+  MI_PRINX Decimal(13, 0)
+  MIS_TYPE Decimal(4, 0)
+  PORT_ROW Decimal(4, 0)
+  PORT_COL Decimal(4, 0)
+  PORT_TYPE Decimal(4, 0)
+Data
+
+Region  1
+  5
+-3180.1 -199.9
+-3180.1 1600.2
+-2120.1 1600.2
+-2120.1 -199.9
+-3180.1 -199.9
+    Pen (2,2,0) 
+    Brush (2,16435400,0)
+    Center -2650.1 699.9
+Region  1
+  5
+-3180.1 -2000
+-3180.1 -199.9
+-2120.1 -199.9
+-2120.1 -2000
+-3180.1 -2000
+    Pen (2,2,0) 
+    Brush (2,16435400,0)
+    Center -2650.1 -1100.2
+Region  1
+  5
+-3180.1 -2000
+-3180.1 1600.2
+-2120.1 1600.2
+-2120.1 -2000
+-3180.1 -2000
+    Pen (2,2,255) 
+    Brush (1,0,16777215)
+    Center -2650.1 -199.9
