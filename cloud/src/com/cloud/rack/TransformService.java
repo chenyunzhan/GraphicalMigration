@@ -40,7 +40,7 @@ public class TransformService {
 
 		//String sql1 = "select c.mis_id, c.geoloc.SDO_POINT.x x, c.geoloc.SDO_POINT.y y from e_mi_store a inner join e_shelf b on a.mis_id = b.shelf_id inner join e_mi_shelf_panel c on a.map_id = c.map_id where c.layer_name = '模块' and b.shelf_no = ? order by c.geoloc.SDO_POINT.Y, c.geoloc.SDO_POINT.X";
 		String sqlx = "select mis_id, labelstr, min(column_value) minx, max(column_value) maxx from (select c.mis_id, c.labelstr, d.*, rownum rn from e_mi_store a, e_shelf b, e_mi_shelf_panel c, table(c.geoloc.SDO_ORDINATES) d where a.map_id = c.map_id and a.mis_id = b.shelf_id and b.shelf_no = ? and c.layer_name = '模块')  where mod(rn, 2) = 1 group by mis_id, labelstr";
-		String sqly = "select mis_id, labelstr, min(column_value) minx, max(column_value) maxx from (select c.mis_id, c.labelstr, d.*, rownum rn from e_mi_store a, e_shelf b, e_mi_shelf_panel c, table(c.geoloc.SDO_ORDINATES) d where a.map_id = c.map_id and a.mis_id = b.shelf_id and b.shelf_no = ? and c.layer_name = '模块')  where mod(rn, 2) = 0 group by mis_id, labelstr";
+		String sqly = "select mis_id, labelstr, min(column_value) miny, max(column_value) maxy from (select c.mis_id, c.labelstr, d.*, rownum rn from e_mi_store a, e_shelf b, e_mi_shelf_panel c, table(c.geoloc.SDO_ORDINATES) d where a.map_id = c.map_id and a.mis_id = b.shelf_id and b.shelf_no = ? and c.layer_name = '模块')  where mod(rn, 2) = 0 group by mis_id, labelstr";
 		String sql2 = "select a.shelf_id, a.upper_resource_id from t_rm_shelf AS a where a.ATTRIBUTE2 = ?";
 		Connection conn1 = DB_OLD_FORMAL.getConn();
 		Connection conn2 = DB_RM_RDM_SID_LU_H.getConn();
@@ -58,14 +58,12 @@ public class TransformService {
 			double maxy = 0;
 			getRackCR(rackName);
 			getRackMaxXY(rackName);
-			while(rsy.next()) {
-				miny = Math.abs(rsx.getDouble("miny"));
-				maxy = Math.abs(rsx.getDouble("maxy"));
-			}
-			while(rsx.next()) {
+			while(rsx.next() && rsy.next()) {
 				misId = rsx.getString("mis_id");
 				minx = Math.abs(rsx.getDouble("minx"));
-				maxy = Math.abs(rsx.getDouble("maxx"));
+				maxx = Math.abs(rsx.getDouble("maxx"));
+				miny = Math.abs(rsy.getDouble("miny"));
+				maxy = Math.abs(rsy.getDouble("maxy"));
 				
 				PreparedStatement ps2 = conn2.prepareStatement(sql2);
 				ps2.setString(1, misId);
@@ -92,7 +90,7 @@ public class TransformService {
 						rs++;
 					}
 					cs = cs - 1;
-					rs = rs - 1;
+					//rs = rs - 1;
 					//cs = (int) (x/(rackMaxX/rackCols));
 					//rs = (int) (y/(rackMaxY/rackRows));
 					sm.setResId(resId);
@@ -100,8 +98,9 @@ public class TransformService {
 					sm.setRow((int) ((maxy - miny)/rackUnitHeight));
 					sm.setHeight(rackUnitHeight*r*10);
 					sm.setWidth(rackWidth*10);
-					sm.setPosY(rackUnitHeight*(rs-1)+60);
-					sm.setPosX(rackUnitWidth*(cs-1)+10);
+					sm.setPosY(-rackUnitHeight*(rs)+60+1525);
+					//sm.setPosX(rackUnitWidth*(cs-1)+10);
+					sm.setPosX(0);
 					shelves.add(sm);
 				}
 				
@@ -205,30 +204,28 @@ public class TransformService {
 		String sqlx = "select max(column_value) maxx from (select c.mis_id, c.labelstr, d.*, rownum rn from e_mi_store a, e_shelf b, e_mi_shelf_panel c, table(c.geoloc.SDO_ORDINATES) d where a.map_id = c.map_id and a.mis_id = b.shelf_id and b.shelf_no = ? and c.layer_name = '模块')  where mod(rn, 2) = 1";
 		String sqly = "select max(column_value) maxy from (select c.mis_id, c.labelstr, d.*, rownum rn from e_mi_store a, e_shelf b, e_mi_shelf_panel c, table(c.geoloc.SDO_ORDINATES) d where a.map_id = c.map_id and a.mis_id = b.shelf_id and b.shelf_no = ? and c.layer_name = '模块')  where mod(rn, 2) = 0";
         Connection conn = DB_OLD_FORMAL.getConn();
-        PreparedStatement ps = null;
+        PreparedStatement psx = null;
         PreparedStatement psy = null;
-        ResultSet rs = null;
+        ResultSet rsx = null;
         ResultSet rsy = null;
 		try {
-			ps = conn.prepareStatement(sqlx);
+			psx = conn.prepareStatement(sqlx);
 			psy = conn.prepareStatement(sqly);
-			ps.setString(1, rackName);
+			psx.setString(1, rackName);
 			psy.setString(1, rackName);
-			rs = ps.executeQuery();
+			rsx = psx.executeQuery();
 			rsy = psy.executeQuery();
-			while(rs.next()) {
-				rackMaxX = rs.getDouble("maxx");
-			}
-			while(rsy.next()) {
-				rackMaxY = rs.getDouble("maxy");
+			while(rsy.next()&& rsx.next()) {
+				rackMaxX = rsx.getDouble("maxx");
+				rackMaxY = rsy.getDouble("maxy");
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
 			try {
-				rs.close();
-				ps.close();
+				rsx.close();
+				psx.close();
 				rsy.close();
 				psy.close();
 				conn.close();
