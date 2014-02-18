@@ -132,10 +132,13 @@ public class TransformService {
 	
 	public void updateShelves(List<ShelfModel> shelves, Integer topInstanceId, Connection conn) {
 		String sql = "UPDATE t_rm_shelf a SET a.POS_X = ?, a.POS_Y = ?, a.TP_WIDTH = ?, a.TP_HEIGHT = ? WHERE a.SHELF_ID = ?;";
+		String sql1 = "SELECT count(*) FROM t_rm_slot where SHELF_ID = ?;";
+		String sql2 = "SELECT SLOT_ID FROM t_rm_slot c WHERE c.SHELF_ID = ? ORDER BY c.SLOT_CODE;";
+		String sql3 = "UPDATE t_rm_slot a SET a.POS_X = ?, a.POS_Y = ?, a.TP_WIDTH = ?, a.TP_HEIGHT = ? WHERE a.SLOT_ID = ?";
 		//Connection conn = DB_RM_RDM_SID_LU_H.getConn();
 		try {
 			for (Iterator iterator = shelves.iterator(); iterator.hasNext();) {
-				ShelfModel sm = (ShelfModel) iterator.next();
+					ShelfModel sm = (ShelfModel) iterator.next();
 					PreparedStatement ps = conn.prepareStatement(sql);
 					ps.setDouble(1, sm.getPosX());
 					ps.setDouble(2, sm.getPosY());
@@ -143,6 +146,46 @@ public class TransformService {
 					ps.setDouble(4, sm.getHeight());
 					ps.setString(5, sm.getResId());
 					ps.executeUpdate();
+					
+					
+					PreparedStatement ps1 = conn.prepareStatement(sql1);
+					ps1.setString(1, sm.getResId());
+					ResultSet rs1 = ps1.executeQuery();
+					int slot_count = 0;
+					if(rs1.next()) {
+						slot_count = rs1.getInt(1);
+					}
+					double uniteWSlot = sm.getWidth()/slot_count;
+					
+					PreparedStatement ps2 = conn.prepareStatement(sql2);
+					ps2.setString(1, sm.getResId());
+					ResultSet rs2 = ps2.executeQuery();
+					List<SlotModel> slots = new ArrayList<SlotModel>();
+					while(rs2.next()) {
+						SlotModel slm = new SlotModel();
+						String slotId = rs2.getString("SLOT_ID");
+						slm.setSlotId(slotId);
+						slm.setWidth(uniteWSlot);
+						slm.setHeight(sm.getHeight());
+					}
+					
+					for (Iterator iterator2 = slots.iterator(); iterator2
+							.hasNext();) {
+						SlotModel slotModel = (SlotModel) iterator2.next();
+						
+					}
+					
+					for (int i = 0; i < slots.size(); i++) {
+						SlotModel slm = (SlotModel) iterator.next();
+						PreparedStatement ps3 = conn.prepareStatement(sql);
+						ps3.setDouble(1, (i+1)*uniteWSlot);
+						ps3.setDouble(2, 0);
+						ps3.setDouble(3, slm.getWidth());
+						ps3.setDouble(4, slm.getHeight());
+						ps3.setString(5, slm.getSlotId());
+						ps3.executeUpdate();
+					}
+					
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
