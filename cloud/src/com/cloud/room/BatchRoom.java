@@ -19,7 +19,11 @@ import com.cloud.util.DB_RM_TPS_ADB;
  */
 public class BatchRoom {
 	public void batchUpdateRoom(Integer mapId) {
-		String sql1 = "SELECT * FROM room_mapinfo WHERE minx IS NOT NULL and map_id = " + mapId;
+		//String sql1 = "SELECT * FROM room_mapinfo WHERE minx IS NOT NULL and map_id = " + mapId;
+		String sqlo1y = "select min(column_value) miny, max(column_value) maxy from (select b.*, rownum rn from mi_shelf_planform a, table(a.geoloc.SDO_ORDINATES) b where a.map_id = ?) where mod(rn, 2) = 0";
+		String sqlo1x = "select min(column_value) minx, max(column_value) maxx from (select b.*, rownum rn from mi_shelf_planform a, table(a.geoloc.SDO_ORDINATES) b where a.map_id = ?) where mod(rn, 2) = 1";
+		String sqlo2x = "select min(column_value) minx, max(column_value) maxx, mis_id, layer_name, labelstr from (select b.*, rownum rn, a.mis_id, a.layer_name, a.labelstr, a.object_id from mi_shelf_planform a, table(a.geoloc.SDO_ORDINATES) b where a.map_id = ?) where mod(rn, 2) = 1 group by object_id, mis_id, labelstr, layer_name";
+		String sqlo2y = "select min(column_value) miny, max(column_value) maxy, mis_id, layer_name, labelstr from (select b.*, rownum rn, a.mis_id, a.layer_name, a.labelstr, a.object_id from mi_shelf_planform a, table(a.geoloc.SDO_ORDINATES) b where a.map_id = ?) where mod(rn, 2) = 0 group by object_id, mis_id, labelstr, layer_name";
 		String sql2 = "UPDATE t_rm_physical_device SET POS_X = ?, POS_Y = ? WHERE ATTRIBUTE2 = ?;";
 		String sql3 = "UPDATE t_rm_rack SET POS_X = ?, POS_Y = ? WHERE ATTRIBUTE2 = ?;";
 		String sql4 = "select c.room_name map_name from e_mi_store a inner join mi_shelf_planform b on a.map_id=b.map_id inner join s_room c on a.mis_id=c.room_id where a.map_id = ?";
@@ -27,23 +31,31 @@ public class BatchRoom {
 		String sql6 = "SELECT a.TOPO_INSTANCE_ID FROM t_rm_topo_instance AS a WHERE a.RES_CLASS_ID = ? AND a.RESOURCE_ID = ? AND a.SHARDING_ID = ?;";
 		String sql7 = "SELECT MAX(TOPO_INST_POINT_ID)+1 AS maxId FROM t_rm_topo_inst_point";
 		String sql8 = "INSERT t_rm_topo_inst_point(TOPO_INST_POINT_ID, TOPO_INSTANCE_ID, TOPOLOGY_SPEC_LAYER_ID, DEFAULT_STYLE_ATTR_VALUE, AUTO_REFRESH_FLAG, NAME, TOPO_CODE, TIP, POS_X, POS_Y, POS_Z, HEIGHT, WIDTH, LENGTH, POINTS, GROUP_EXPANDED_FLAG, PARENT_TOPO_CODE, RES_OBJECT_TYPE_ENUM_ID, RES_CLASS_REL_ID, RES_CLASS_ID, RES_SHARDING_ID, RES_ID, RES_EXPAND_INFO, MAPPING_TOPO_INSTANCE_ID, CREATED_BY, LAST_UPDATED_BY) values (?, ?, 562, '', 0, ?, UUID(), '', ?, ?, NULL, ?, ?, NULL, NULL, 0, '', 44102, -1, 0, 0, 0, 'content.type:vector|vector.shape:rectangle', 0, 0, 0);";
-		Connection conn1 = DB_LOCAL.getConn();
+		//Connection conn1 = DB_LOCAL.getConn();
 		Connection conn2 = DB_RM_RDM_SID_LU_H.getConn();
 		Connection conn3 = DB_OLD_FORMAL.getConn();
 		Connection conn4 = DB_RM_TPS_ADB.getConn();
 		
 		try {
-			PreparedStatement ps = conn1.prepareStatement(sql1);
-			ResultSet rs = ps.executeQuery();
+			PreparedStatement psx = conn3.prepareStatement(sqlo1x);
+			PreparedStatement psy = conn3.prepareStatement(sqlo1y);
+			psx.setInt(1, mapId);
+			psy.setInt(1, mapId);
+			ResultSet rsx = psx.executeQuery();
+			ResultSet rsy = psy.executeQuery();
 			double minx = 100000.0;
 			double maxy = 0.0;
 			double miny = 100000.0;
 			double maxx = 0.0;
 			//求出最小的x和最小的y
-			while (rs.next()) {
-				String X = rs.getString("minx");
-				String Y = rs.getString("miny");
-				//System.out.println(X + " , " + Y);
+			while (rsx.next() && rsy.next()) {
+				minx = rsx.getDouble("minx");
+				miny = rsy.getDouble("miny");
+				maxx = rsx.getDouble("maxx");
+				maxy = rsy.getDouble("maxy");
+				/**
+				 * 
+				System.out.println(X + " , " + Y);
 				double a = (Double.parseDouble(X))*639/639;
 				double b = ((Double.parseDouble(Y))*639/639);
 				System.out.println(a + " , " + b);
@@ -59,6 +71,7 @@ public class BatchRoom {
 				if(b < miny) {
 					miny = b;
 				}
+				 */
 			}
 			System.out.println("#########################");
 			System.out.println("minx:" + minx);
@@ -66,8 +79,12 @@ public class BatchRoom {
 			System.out.println("maxx:" + maxx);
 			System.out.println("miny:" + miny);
 			System.out.println("#########################");
-			PreparedStatement ps1 = conn1.prepareStatement(sql1);
-			ResultSet rs1 = ps1.executeQuery();
+			PreparedStatement pso2x = conn3.prepareStatement(sqlo2x);
+			PreparedStatement pso2y = conn3.prepareStatement(sqlo2y);
+			pso2x.setInt(1, mapId);
+			pso2y.setInt(1, mapId);
+			ResultSet rso2x = pso2x.executeQuery();
+			ResultSet rso2y = pso2y.executeQuery();
 			
 			
 			//批量更新存量数据的坐标点。
@@ -77,16 +94,16 @@ public class BatchRoom {
 			ps3 = conn2.prepareStatement(sql3);
 			conn2.setAutoCommit(false);
 			//遍历所有的矩形
-			while (rs1.next()) {
-				int misId = rs1.getInt("mis_id");
+			while (rso2x.next() && rso2y.next()) {
+				int misId = rso2x.getInt("mis_id");
 				//String mapId = rs1.getString("map_id");
-				String name = rs1.getString("name");
+				String name = rso2x.getString("labelstr");
 				double height = 0;
 				double width = 0;
-				double X = Double.parseDouble(rs1.getString("minx"))*639/639 - minx + 400;
-				double Y = -(Double.parseDouble(rs1.getString("miny"))*639/639 - maxy) + 800;
-				height = rs1.getDouble("maxy") - rs1.getDouble("miny");
-				width = rs1.getDouble("maxx") - rs1.getDouble("minx");
+				double X = Double.parseDouble(rso2x.getString("minx"))*639/639 - minx + 400;
+				double Y = -(Double.parseDouble(rso2y.getString("miny"))*639/639 - maxy) + 800;
+				height = rso2y.getDouble("maxy") - rso2y.getDouble("miny");
+				width = rso2x.getDouble("maxx") - rso2x.getDouble("minx");
 				
 				X = X/2.5;
 				Y = Y/4;
@@ -133,7 +150,7 @@ public class BatchRoom {
 					ps8.setString(3, "");
 					ps8.setDouble(4, X);
 					ps8.setDouble(5, Y-height);
-					if((rs1.getString("layer_id").equals("\"3\""))) {
+					if((rso2x.getString("layer_name").equals("\"3\""))) {
 						ps8.setDouble(6, 1);
 						ps8.setDouble(7, 1);
 					}else {
@@ -168,7 +185,9 @@ public class BatchRoom {
 				
 			}
 			
+			@SuppressWarnings("unused")
 			int[] num2 = ps2.executeBatch();
+			@SuppressWarnings("unused")
 			int[] num3 = ps3.executeBatch();
 			conn2.commit();  
             conn2.setAutoCommit(true);  
@@ -202,15 +221,15 @@ public class BatchRoom {
 	
 	public static void main(String[] args) {
 		BatchRoom br = new BatchRoom();
+		br.batchUpdateRoom(568232);
 		/**
 		 * 
-		br.batchUpdateRoom(2208);
-		 */
 		List<Integer> list = br.getRoomList();
 		for (Iterator<Integer> iterator = list.iterator(); iterator.hasNext();) {
 			Integer mapId = (Integer) iterator.next();
 			br.batchUpdateRoom(mapId);
 		}
+		 */
 	}
 	
 }

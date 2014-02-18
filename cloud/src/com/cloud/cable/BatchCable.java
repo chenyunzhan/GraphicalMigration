@@ -14,7 +14,7 @@ import com.cloud.util.DB_RM_TPS_ADB;
 public class BatchCable {
 	public static List<String> batchUpdateTransmission() {
 		List<String> list = new ArrayList<String>();
-		String sql = "SELECT * FROM t_rm_cable AS a WHERE a.DELETED_FLAG=0 AND a.RES_CLASS_ID=252 AND a.SHARDING_ID = 123702 LIMIT 0, 101;";
+		String sql = "SELECT * FROM t_rm_cable AS a WHERE a.DELETED_FLAG=0 AND a.RES_CLASS_ID=252 AND a.SHARDING_ID = 123702 LIMIT 8, 11;";
 		String sql2 = "SELECT * FROM t_rm_topo_instance AS d WHERE d.RES_CLASS_ID = ? AND d.RESOURCE_ID = ? AND d.SHARDING_ID = ?;";
 		Connection conn1 = DB_RM_TPS_ADB.getConn();
 		Connection conn = DB_RM_RDM_SID_LU_H.getConn();

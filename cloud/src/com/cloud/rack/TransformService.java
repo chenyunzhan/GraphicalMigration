@@ -27,12 +27,14 @@ public class TransformService {
 	private Integer rackRows = 0;
 	private double rackMaxX = 0;
 	private double rackMaxY = 0;
+	private double rackMinX = 0;
+	private double rackMinY = 0;
 	private double rackUnitWidth = 0;
 	private double rackUnitHeight = 0;
 	private List<ShelfModel> shelves = new ArrayList<ShelfModel>();
 	
 	
-	public void transform(Integer topInstanceId, String rackName) {
+	public void transform(Integer topInstanceId, String rackName, Connection conn1, Connection conn2) {
 		/**
 		 * 
 		
@@ -42,8 +44,7 @@ public class TransformService {
 		String sqlx = "select mis_id, labelstr, min(column_value) minx, max(column_value) maxx from (select c.mis_id, c.labelstr, d.*, rownum rn from e_mi_store a, e_shelf b, e_mi_shelf_panel c, table(c.geoloc.SDO_ORDINATES) d where a.map_id = c.map_id and a.mis_id = b.shelf_id and b.shelf_no = ? and c.layer_name = '模块')  where mod(rn, 2) = 1 group by mis_id, labelstr";
 		String sqly = "select mis_id, labelstr, min(column_value) miny, max(column_value) maxy from (select c.mis_id, c.labelstr, d.*, rownum rn from e_mi_store a, e_shelf b, e_mi_shelf_panel c, table(c.geoloc.SDO_ORDINATES) d where a.map_id = c.map_id and a.mis_id = b.shelf_id and b.shelf_no = ? and c.layer_name = '模块')  where mod(rn, 2) = 0 group by mis_id, labelstr";
 		String sql2 = "select a.shelf_id, a.upper_resource_id from t_rm_shelf AS a where a.ATTRIBUTE2 = ?";
-		Connection conn1 = DB_OLD_FORMAL.getConn();
-		Connection conn2 = DB_RM_RDM_SID_LU_H.getConn();
+		
 		try {
 			PreparedStatement psx = conn1.prepareStatement(sqlx);
 			PreparedStatement psy = conn1.prepareStatement(sqly);
@@ -56,14 +57,14 @@ public class TransformService {
 			double miny = 0;
 			double maxx = 0;
 			double maxy = 0;
-			getRackCR(rackName);
-			getRackMaxXY(rackName);
+			getRackCR(rackName, conn1);
+			getRackMaxXY(rackName, conn1);
 			while(rsx.next() && rsy.next()) {
 				misId = rsx.getString("mis_id");
-				minx = Math.abs(rsx.getDouble("minx"));
-				maxx = Math.abs(rsx.getDouble("maxx"));
-				miny = Math.abs(rsy.getDouble("miny"));
-				maxy = Math.abs(rsy.getDouble("maxy"));
+				minx = rsx.getDouble("minx");
+				maxx = rsx.getDouble("maxx");
+				miny = rsy.getDouble("miny");
+				maxy = rsy.getDouble("maxy");
 				
 				PreparedStatement ps2 = conn2.prepareStatement(sql2);
 				ps2.setString(1, misId);
@@ -79,49 +80,59 @@ public class TransformService {
 					resId = rs2.getString("shelf_id");
 					rackId = rs2.getString("upper_resource_id");
 					if(rackId != null && rackWidth == 683 && rackHeight == 1525) {
-						getRackWH(rackId);
+						getRackWH(rackId, conn2);
 					}
 					rackUnitHeight = rackHeight/rackRows;
 					rackUnitWidth = rackWidth/rackCols;
-					while((rackMaxX/rackCols*cs) <= rackMaxX && minx >= (rackMaxX/rackCols*cs)) {
+					/*
+					while(((rackMaxX-rackMinX)/rackCols*cs) <= (rackMaxX-rackMinX) && minx >= ((rackMaxX-rackMinX)/rackCols*cs)) {
 						cs ++;
 					}
 					while((rackMaxY/rackRows*rs) <= rackMaxY && miny >= (rackMaxY/rackRows*rs)) {
 						rs++;
 					}
-					cs = cs - 1;
+					*/
+					//cs = cs - 1;
 					//rs = rs - 1;
-					//cs = (int) (x/(rackMaxX/rackCols));
-					//rs = (int) (y/(rackMaxY/rackRows));
+					cs = (int) ((minx-rackMinX)/((rackMaxX-rackMinX)/rackCols));
+					rs = (int) ((miny-rackMinY)/((rackMaxY-rackMinY)/rackRows));
+					//cs = cs + 1;
+					//rs = rs + 1;
 					sm.setResId(resId);
 					sm.setCol((int) ((maxx - minx)/rackUnitWidth));
 					sm.setRow((int) ((maxy - miny)/rackUnitHeight));
 					sm.setHeight(rackUnitHeight*r*10);
 					sm.setWidth(rackWidth*10);
-					sm.setPosY(-rackUnitHeight*(rs)+60+1525);
+					sm.setPosY(-rackUnitHeight*(rs)+rackHeight+60-rackUnitHeight);
 					//sm.setPosX(rackUnitWidth*(cs-1)+10);
 					sm.setPosX(0);
 					shelves.add(sm);
+					
+					ps2.close();
+					
 				}
 				
 				
+				
 			}
+			psx.close();
+			psy.close();
 			
-			updateShelves(shelves, topInstanceId);
+			updateShelves(shelves, topInstanceId, conn2);
 			
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		} 
 		
 		
 		
 	}
 	
 	
-	public void updateShelves(List<ShelfModel> shelves, Integer topInstanceId) {
+	public void updateShelves(List<ShelfModel> shelves, Integer topInstanceId, Connection conn) {
 		String sql = "UPDATE t_rm_shelf a SET a.POS_X = ?, a.POS_Y = ?, a.TP_WIDTH = ?, a.TP_HEIGHT = ? WHERE a.SHELF_ID = ?;";
-		Connection conn = DB_RM_RDM_SID_LU_H.getConn();
+		//Connection conn = DB_RM_RDM_SID_LU_H.getConn();
 		try {
 			for (Iterator iterator = shelves.iterator(); iterator.hasNext();) {
 				ShelfModel sm = (ShelfModel) iterator.next();
@@ -136,19 +147,12 @@ public class TransformService {
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} finally {
-			try {
-				conn.close();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+		} 
 		
 	}
 	
-	public void getRackWH(String rackId) {
-		Connection conn = DB_RM_RDM_SID.getConn();
+	public void getRackWH(String rackId, Connection conn) {
+		//Connection conn = DB_RM_RDM_SID.getConn();
 		//String sql2 = "SELECT * FROM t_rm_shelf AS b WHERE b.SHELF_ID = ?;";
 		String sql3 = "select a.TP_HEIGHT, a.TP_WIDTH from t_rm_rack AS a WHERE a.RACK_ID = ?;";
 		try {
@@ -167,9 +171,9 @@ public class TransformService {
 	
 	
 	
-	public void getRackCR(String rackName) {
+	public void getRackCR(String rackName, Connection conn) {
 		String sql = "select count(*) from e_mi_store a inner join e_shelf b on a.mis_id = b.shelf_id inner join e_mi_shelf_panel c on a.map_id = c.map_id where c.layer_name = '模块' and b.shelf_no = ? group by c.geoloc.SDO_POINT.Y";
-        Connection conn = DB_OLD_FORMAL.getConn();
+        //Connection conn = DB_OLD_FORMAL.getConn();
         PreparedStatement ps = null;
         ResultSet rs = null;
 		try {
@@ -183,27 +187,19 @@ public class TransformService {
 					rackCols = Integer.parseInt(str);
 				}
 			}
+			ps.close();
 			System.out.println("rows:" + rackRows + ";cols:" + rackCols);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} finally {
-			try {
-				rs.close();
-				ps.close();
-				conn.close();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 		}
 	}
 	
 	
-	public void getRackMaxXY(String rackName) {
-		String sqlx = "select max(column_value) maxx from (select c.mis_id, c.labelstr, d.*, rownum rn from e_mi_store a, e_shelf b, e_mi_shelf_panel c, table(c.geoloc.SDO_ORDINATES) d where a.map_id = c.map_id and a.mis_id = b.shelf_id and b.shelf_no = ? and c.layer_name = '模块')  where mod(rn, 2) = 1";
-		String sqly = "select max(column_value) maxy from (select c.mis_id, c.labelstr, d.*, rownum rn from e_mi_store a, e_shelf b, e_mi_shelf_panel c, table(c.geoloc.SDO_ORDINATES) d where a.map_id = c.map_id and a.mis_id = b.shelf_id and b.shelf_no = ? and c.layer_name = '模块')  where mod(rn, 2) = 0";
-        Connection conn = DB_OLD_FORMAL.getConn();
+	public void getRackMaxXY(String rackName, Connection conn) {
+		String sqlx = "select max(column_value) maxx, min(column_value) minx from (select c.mis_id, c.labelstr, d.*, rownum rn from e_mi_store a, e_shelf b, e_mi_shelf_panel c, table(c.geoloc.SDO_ORDINATES) d where a.map_id = c.map_id and a.mis_id = b.shelf_id and b.shelf_no = ? and c.layer_name = '模块')  where mod(rn, 2) = 1";
+		String sqly = "select max(column_value) maxy, min(column_value) miny from (select c.mis_id, c.labelstr, d.*, rownum rn from e_mi_store a, e_shelf b, e_mi_shelf_panel c, table(c.geoloc.SDO_ORDINATES) d where a.map_id = c.map_id and a.mis_id = b.shelf_id and b.shelf_no = ? and c.layer_name = '模块')  where mod(rn, 2) = 0";
+        //Connection conn = DB_OLD_FORMAL.getConn();
         PreparedStatement psx = null;
         PreparedStatement psy = null;
         ResultSet rsx = null;
@@ -218,7 +214,11 @@ public class TransformService {
 			while(rsy.next()&& rsx.next()) {
 				rackMaxX = rsx.getDouble("maxx");
 				rackMaxY = rsy.getDouble("maxy");
+				rackMinX = rsx.getDouble("minx");
+				rackMinY = rsy.getDouble("miny");
 			}
+			psx.close();
+			psy.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -228,7 +228,7 @@ public class TransformService {
 				psx.close();
 				rsy.close();
 				psy.close();
-				conn.close();
+				//conn.close();
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -238,6 +238,6 @@ public class TransformService {
 	
 	public static void main(String[] args) {
 		TransformService ts = new TransformService();
-		ts.transform(2149, "330局传输-IP设备架-07");
+		//ts.transform(2149, "330局传输-IP设备架-07");
 	}
 }

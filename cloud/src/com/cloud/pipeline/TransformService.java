@@ -103,6 +103,6 @@ public class TransformService {
 	}
 	
 	public static void main(String[] args) {
-		getPoint(2106, "鑫园小区管路");
+		getPoint(2345, "鑫园小区管路");
 	}
 }

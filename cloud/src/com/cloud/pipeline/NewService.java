@@ -8,12 +8,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.cloud.util.DB_RM_RDM_SID_LU_H;
+import com.cloud.util.DB_RM_TPS_ADB;
 
 public class NewService {
 	public List<PipeLine> getPipeLines() {
 		String sql = "SELECT SUPPORT_FACILITY_ID, RES_CLASS_ID, SHARDING_ID, SUPPORT_FACILITY_NAME FROM t_rm_support_facility;";
 		String sql1 = "SELECT d.TOPO_INSTANCE_ID FROM t_rm_topo_instance AS d WHERE d.RES_CLASS_ID = ? AND d.RESOURCE_ID = ? AND d.SHARDING_ID = ?;";
 		Connection conn = DB_RM_RDM_SID_LU_H.getConn();
+		Connection conn1 = DB_RM_TPS_ADB.getConn();
 		PreparedStatement ps = null;
 		PreparedStatement ps1 = null;
 		List<PipeLine> list = new ArrayList<PipeLine>();
@@ -31,7 +33,7 @@ public class NewService {
 				SHARDING_ID = rs.getString("SHARDING_ID");
 				SUPPORT_FACILITY_NAME = rs.getString("SUPPORT_FACILITY_NAME");
 			}
-			ps1 = conn.prepareStatement(sql1);
+			ps1 = conn1.prepareStatement(sql1);
 			ps1.setString(1, RES_CLASS_ID);
 			ps1.setString(2, SUPPORT_FACILITY_ID);
 			ps1.setString(3, SHARDING_ID);
