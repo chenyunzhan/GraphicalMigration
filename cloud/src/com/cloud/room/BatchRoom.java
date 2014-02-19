@@ -29,7 +29,7 @@ public class BatchRoom {
 		String sql4 = "select c.room_name map_name from e_mi_store a inner join mi_shelf_planform b on a.map_id=b.map_id inner join s_room c on a.mis_id=c.room_id where a.map_id = ?";
 		String sql5 = "SELECT a.LOCATION_ID AS RES_ID, a.RES_CLASS_ID, a.SHARDING_ID from t_rm_location AS a WHERE a.LOCATION_NAME = ?;";
 		String sql6 = "SELECT a.TOPO_INSTANCE_ID FROM t_rm_topo_instance AS a WHERE a.RES_CLASS_ID = ? AND a.RESOURCE_ID = ? AND a.SHARDING_ID = ?;";
-		String sql7 = "SELECT MAX(TOPO_INST_POINT_ID)+1 AS maxId FROM t_rm_topo_inst_point";
+		String sql7 = "SELECT SEQ_RM_TPS_ADB_T_RM_TOPO_INST_POINT_TOPO_INST_POINT_ID.nextval";
 		String sql8 = "INSERT t_rm_topo_inst_point(TOPO_INST_POINT_ID, TOPO_INSTANCE_ID, TOPOLOGY_SPEC_LAYER_ID, DEFAULT_STYLE_ATTR_VALUE, AUTO_REFRESH_FLAG, NAME, TOPO_CODE, TIP, POS_X, POS_Y, POS_Z, HEIGHT, WIDTH, LENGTH, POINTS, GROUP_EXPANDED_FLAG, PARENT_TOPO_CODE, RES_OBJECT_TYPE_ENUM_ID, RES_CLASS_REL_ID, RES_CLASS_ID, RES_SHARDING_ID, RES_ID, RES_EXPAND_INFO, MAPPING_TOPO_INSTANCE_ID, CREATED_BY, LAST_UPDATED_BY) values (?, ?, 562, '', 0, ?, UUID(), '', ?, ?, NULL, ?, ?, NULL, NULL, 0, '', 44102, -1, 0, 0, 0, 'content.type:vector|vector.shape:rectangle', 0, 0, 0);";
 		//Connection conn1 = DB_LOCAL.getConn();
 		Connection conn2 = DB_RM_RDM_SID_LU_H.getConn();
@@ -142,7 +142,7 @@ public class BatchRoom {
 					ResultSet rs7 = ps7.executeQuery();
 					String maxId = null;
 					if(rs7.next()) {
-						maxId = rs7.getString("maxId");
+						maxId = rs7.getString("value");
 					}
 					PreparedStatement ps8 = conn4.prepareStatement(sql8);
 					ps8.setString(1, maxId);
