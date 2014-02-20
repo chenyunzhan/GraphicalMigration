@@ -1,14 +1,8 @@
 package com.cloud.cable;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
-import com.cloud.util.DB_OLD_FORMAL;
-import com.cloud.util.DB_RM_RDM_SID_LU_H;
-import com.cloud.util.DB_RM_TPS_ADB;
-
 /**
  * 高新区沁心园小区-S001GL
  * @author Administrator
@@ -17,48 +11,27 @@ import com.cloud.util.DB_RM_TPS_ADB;
 public class CableTransPoint {
 	public static void getPoint(Integer topInstanceId, String cableName, Connection conn, Connection conn1, Connection conn2) {
 		String sql = "select c.geoloc.SDO_POINT.x X, c.geoloc.SDO_POINT.y Y , c.point_misid, c.object_type from F_mi_store a inner join f_fiber_system b on a.mis_id=b.fsystem_id inner join f_mi_system_points c on a.map_id = c.map_id where b.fsystem_no = ?";
+		String sql2 = "select min(c.geoloc.SDO_POINT.x) minx, max(c.geoloc.SDO_POINT.y) maxy from F_mi_store a inner join f_fiber_system b on a.mis_id=b.fsystem_id inner join f_mi_system_points c on a.map_id = c.map_id where b.fsystem_no = ?;";
 		String update_sql = "UPDATE t_rm_topo_inst_point a SET  a.POS_X = ?, a.POS_Y = ? WHERE a.RES_ID = ? AND a.TOPO_INSTANCE_ID = "+ topInstanceId +";";
 		//在新系统里查询该点的资源名称
 		String find_res_id1 = "SELECT b.LOCATION_ID AS RES_ID FROM t_rm_location AS b WHERE b.ATTRIBUTE2 = ?;";
 		String find_res_id2 = "SELECT b.JOINT_BOX_ID AS RES_ID FROM T_RM_JOINT_BOX AS b WHERE b.ATTRIBUTE2 = ?;";
 		String find_res_id3 = "SELECT b.PHYSICAL_DEVICE_ID AS RES_ID FROM t_rm_physical_device AS b WHERE b.ATTRIBUTE2 = ?;";
-		
 		try {
-			PreparedStatement ps = conn.prepareStatement(sql);
+			PreparedStatement ps = conn.prepareStatement(sql2);
 			ps.setString(1, cableName);
 			ResultSet rs = ps.executeQuery();
 			double minx = 1000000.0;
 			double maxy = 0.0;
-			double miny = 1000000.0;
-			double maxx = 0.0;
 			//求出最小的x和最小的y
-			while (rs.next()) {
-				String X = rs.getString("X");
-				String Y = rs.getString("Y");
-				//System.out.println(X + " , " + Y);
-				double a = (Double.parseDouble(X))*800/639;
-				double b = ((Double.parseDouble(Y))*800/639);
-				System.out.println(a + " , " + b);
-				if(a < minx) {
-					minx = a;
-				}
-				if(b > maxy) {
-					maxy = b;
-				}
-				if(a > maxx) {
-					maxx = a;
-				}
-				if(b < miny) {
-					miny = b;
-				}
+			if (rs.next()) {
+				minx = rs.getDouble("minx");
+				maxy = rs.getDouble("maxy");
 			}
 			System.out.println("#########################");
 			System.out.println("minx:" + minx);
 			System.out.println("maxy:" + maxy);
-			System.out.println("maxx:" + maxx);
-			System.out.println("miny:" + miny);
 			System.out.println("#########################");
-			
 			PreparedStatement ps1 = conn.prepareStatement(sql);
 			ps1.setString(1, cableName);
 			ResultSet rs1 = ps1.executeQuery();
@@ -97,10 +70,5 @@ public class CableTransPoint {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-	}
-	
-	public static void main(String[] args) {
-		//getPoint(12345);
 	}
 }
