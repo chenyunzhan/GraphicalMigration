@@ -14,17 +14,18 @@ import com.cloud.util.DB_RM_TPS_ADB;
  *
  */
 public class TransPoint {
-	public static void getPoint(Integer topInstanceId, String topoName) {
-		String sql = "select a.geoloc.SDO_POINT.x X, a.geoloc.SDO_POINT.y Y , a.point_misid, a.topo_name from t_mi_system_points a where a.topo_name = '%滕州本地网西北环四2.5G/OF2.5G%'";
+	public static void getPoint(Integer topInstanceId, String topoName, Connection conn, Connection conn1, Connection conn2) {
+		String sql = "select a.geoloc.SDO_POINT.x X, a.geoloc.SDO_POINT.y Y , a.point_misid, a.topo_name from t_mi_system_points a where a.topo_name = ?";
 		//String sql = "select a.geoloc.SDO_POINT.x X, a.geoloc.SDO_POINT.y Y , a.point_misid, a.topo_name from t_mi_system_points a where a.topo_name = '" + topoName + "'";
 		String update_sql = "UPDATE t_rm_topo_inst_point a SET  a.POS_X = ?, a.POS_Y = ? WHERE a.RES_ID = ? AND a.TOPO_INSTANCE_ID = " + topInstanceId + ";";
 		String query_parent_sql = "SELECT * FROM  t_rm_topo_inst_point AS a WHERE a.TOPO_INSTANCE_ID = "+ topInstanceId +" AND a.RES_ID = ?;";
 		String update_child_sql = "UPDATE t_rm_topo_inst_point a SET  a.POS_X = ?, a.POS_Y = ? WHERE a.PARENT_TOPO_CODE = ? AND a.TOPO_INSTANCE_ID = "+ topInstanceId +";";
 		String find_physical_device = "SELECT b.PHYSICAL_DEVICE_ID AS resId FROM t_rm_physical_device AS b WHERE b.ATTRIBUTE2 = ?";
-		Connection conn = DB_OLD_FORMAL.getConn();
-		Connection conn1 = DB_RM_TPS_ADB.getConn();
+		//Connection conn = DB_OLD_FORMAL.getConn();
+		//Connection conn1 = DB_RM_TPS_ADB.getConn();
 		try {
 			PreparedStatement ps = conn.prepareStatement(sql);
+			ps.setString(1, topoName);
 			ResultSet rs = ps.executeQuery();
 			double minx = 100000.0;
 			double maxy = 0.0;
@@ -59,6 +60,7 @@ public class TransPoint {
 			System.out.println("#########################");
 			
 			PreparedStatement ps1 = conn.prepareStatement(sql);
+			ps1.setString(1, topoName);
 			ResultSet rs1 = ps1.executeQuery();
 			while (rs1.next()) {
 				String X = rs1.getString("X");
@@ -72,7 +74,7 @@ public class TransPoint {
 				PreparedStatement ps2 = conn1.prepareStatement(update_sql);
 				PreparedStatement ps3 = conn1.prepareStatement(update_child_sql);
 				PreparedStatement ps4 = conn1.prepareStatement(query_parent_sql);
-				PreparedStatement ps5 = conn1.prepareStatement(find_physical_device);
+				PreparedStatement ps5 = conn2.prepareStatement(find_physical_device);
 				ps5.setString(1, misid);
 				String resId = null;
 				ResultSet rs5 = ps5.executeQuery();

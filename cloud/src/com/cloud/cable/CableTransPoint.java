@@ -15,18 +15,17 @@ import com.cloud.util.DB_RM_TPS_ADB;
  *
  */
 public class CableTransPoint {
-	public static void getPoint(Integer topInstanceId, String fSystemNo, Connection conn, Connection conn1, Connection conn2) {
+	public static void getPoint(Integer topInstanceId, String cableName, Connection conn, Connection conn1, Connection conn2) {
 		String sql = "select c.geoloc.SDO_POINT.x X, c.geoloc.SDO_POINT.y Y , c.point_misid, c.object_type from F_mi_store a inner join f_fiber_system b on a.mis_id=b.fsystem_id inner join f_mi_system_points c on a.map_id = c.map_id where b.fsystem_no = ?";
 		String update_sql = "UPDATE t_rm_topo_inst_point a SET  a.POS_X = ?, a.POS_Y = ? WHERE a.RES_ID = ? AND a.TOPO_INSTANCE_ID = "+ topInstanceId +";";
-		String query_parent_sql = "SELECT * FROM  t_rm_topo_inst_point AS a WHERE a.TOPO_INSTANCE_ID = "+ topInstanceId +" AND a.RES_ID = ?;";
-		String update_child_sql = "UPDATE t_rm_topo_inst_point a SET  a.POS_X = ?, a.POS_Y = ? WHERE a.PARENT_TOPO_CODE = ? AND a.TOPO_INSTANCE_ID = "+ topInstanceId +";";
+		//在新系统里查询该点的资源名称
 		String find_res_id1 = "SELECT b.LOCATION_ID AS RES_ID FROM t_rm_location AS b WHERE b.ATTRIBUTE2 = ?;";
 		String find_res_id2 = "SELECT b.JOINT_BOX_ID AS RES_ID FROM T_RM_JOINT_BOX AS b WHERE b.ATTRIBUTE2 = ?;";
 		String find_res_id3 = "SELECT b.PHYSICAL_DEVICE_ID AS RES_ID FROM t_rm_physical_device AS b WHERE b.ATTRIBUTE2 = ?;";
 		
 		try {
 			PreparedStatement ps = conn.prepareStatement(sql);
-			ps.setString(1, fSystemNo);
+			ps.setString(1, cableName);
 			ResultSet rs = ps.executeQuery();
 			double minx = 1000000.0;
 			double maxy = 0.0;
@@ -61,7 +60,7 @@ public class CableTransPoint {
 			System.out.println("#########################");
 			
 			PreparedStatement ps1 = conn.prepareStatement(sql);
-			ps1.setString(1, fSystemNo);
+			ps1.setString(1, cableName);
 			ResultSet rs1 = ps1.executeQuery();
 			while (rs1.next()) {
 				String X = rs1.getString("X");
@@ -89,37 +88,10 @@ public class CableTransPoint {
 				if(rs3.next()) {
 					resId = rs3.getString("RES_ID");
 				}
-				/**
-				 * 
-				PreparedStatement ps4 = conn2.prepareStatement(find_res_id2);
-				ps4.setString(1, misid);
-				ResultSet rs4 = ps4.executeQuery();
-				if(rs4.next()) {
-					resId = rs4.getString("RES_ID");
-				}
-				PreparedStatement ps5 = conn2.prepareStatement(find_res_id3);
-				ps5.setString(1, misid);
-				ResultSet rs5 = ps5.executeQuery();
-				if(rs5.next()) {
-					resId = rs5.getString("RES_ID");
-				}
-				 */
 				ps2.setString(1, String.valueOf(a));
 				ps2.setString(2, String.valueOf(b));
 				ps2.setString(3, resId);
 				int count = ps2.executeUpdate();
-				/**
-				 * 
-				ps4.setString(1, resid);
-				ResultSet rs4 = ps4.executeQuery();
-				while (rs4.next()) {
-					String PARENT_TOPO_CODE = rs4.getString("TOPO_CODE");
-					ps3.setString(1, String.valueOf(a));
-					ps3.setString(2, String.valueOf(b));
-					ps3.setString(3, PARENT_TOPO_CODE);
-					int num = ps3.executeUpdate();
-				}
-				 */
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block

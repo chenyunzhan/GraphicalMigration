@@ -13,7 +13,8 @@ import com.cloud.util.DB_RM_TPS_ADB;
 public class BatchTransmission {
 	public static List<String> batchUpdateTransmission() {
 		List<String> list = new ArrayList<String>();
-		String sql = "SELECT * FROM T_RM_SERVICE_PATH WHERE service_path_name IN ('山亭乡镇西环SDH2.5G');";
+		//String sql = "SELECT * FROM T_RM_SERVICE_PATH WHERE service_path_name IN ('滕州华为OSN7500乡镇环网','枣庄本地南北环SDH10G-2','滕州乡镇东南环一华为SDH2.5G','张店阿朗ASON接入网','阿朗ASON中继网','滕州本地网滕-西岗华为2.5G/OF2.5G','张店烽火环SDH2.5G-1');";
+		String sql = "SELECT * FROM T_RM_SERVICE_PATH WHERE service_path_name IN ('滕州本地网滕-西岗华为2.5G/OF2.5G');";
 		String sql2 = "SELECT * FROM t_rm_topo_instance AS d WHERE d.RES_CLASS_ID = ? AND d.RESOURCE_ID = ? AND d.SHARDING_ID = ?;";
 		Connection conn1 = DB_RM_TPS_ADB.getConn();
 		Connection conn = DB_RM_RDM_SID.getConn();

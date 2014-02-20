@@ -145,7 +145,7 @@ public class BatchRoom {
 						maxId = rs7.getString("value");
 					}
 					PreparedStatement ps8 = conn4.prepareStatement(sql8);
-					ps8.setString(1, maxId);
+					ps8.setString(1, maxId.substring(0,maxId.length()-2));
 					ps8.setString(2, TOPO_INSTANCE_ID);
 					ps8.setString(3, "");
 					ps8.setDouble(4, X);
@@ -221,7 +221,7 @@ public class BatchRoom {
 	
 	public static void main(String[] args) {
 		BatchRoom br = new BatchRoom();
-		br.batchUpdateRoom(568232);
+		br.batchUpdateRoom(822918);
 		/**
 		 * 
 		List<Integer> list = br.getRoomList();

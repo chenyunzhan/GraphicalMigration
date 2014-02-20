@@ -15,14 +15,14 @@ import com.cloud.util.DB_RM_TPS_ADB;
  *
  */
 public class TransformService {
-	public static void getPoint(Integer topInstanceId, String ws_name) {
+	public static void getPoint(Integer topInstanceId, String ws_name, Connection conn, Connection conn1, Connection conn2) {
 		String sql = "select b.geoloc.SDO_POINT.x X, b.geoloc.SDO_POINT.y Y , b.mis_id point_misid from mi_workspace a inner join map_well b on a.ws_id = b.ws_id where a.ws_name = '" + ws_name + "'";
 		String update_sql = "UPDATE t_rm_topo_inst_point a SET  a.POS_X = ?, a.POS_Y = ? WHERE a.RES_ID = ? AND a.TOPO_INSTANCE_ID = "+ topInstanceId +";";
 		String find_support_point = "SELECT b.SUPPORT_POINT_ID AS resId FROM T_RM_SUPPORT_POINT AS b where b.attribute2=?;";
 		//淄博链接
-		Connection conn = DB_OLD_CITY.getConn("jdbc:oracle:thin:@134.35.17.201:1521:zygl", "map", "map");
-		Connection conn1 = DB_RM_TPS_ADB.getConn();
-		Connection conn2 = DB_RM_RDM_SID_LU_H.getConn();
+		//Connection conn = DB_OLD_CITY.getConn("jdbc:oracle:thin:@134.35.17.201:1521:zygl", "map", "map");
+		//Connection conn1 = DB_RM_TPS_ADB.getConn();
+		//Connection conn2 = DB_RM_RDM_SID_LU_H.getConn();
 		try {
 			PreparedStatement ps = conn.prepareStatement(sql);
 			ResultSet rs = ps.executeQuery();
@@ -103,6 +103,6 @@ public class TransformService {
 	}
 	
 	public static void main(String[] args) {
-		getPoint(2345, "鑫园小区管路");
+		//getPoint(2345, "鑫园小区管路");
 	}
 }

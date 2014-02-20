@@ -21,8 +21,8 @@ import com.cloud.util.DB_RM_TPS_ADB;
  */
 public class TransformService {
 	
-	private double rackWidth = 683;
-	private double rackHeight = 1525;
+	private double rackWidth = 6830;
+	private double rackHeight = 15250;
 	private Integer rackCols = 0;
 	private Integer rackRows = 0;
 	private double rackMaxX = 0;
@@ -101,11 +101,11 @@ public class TransformService {
 					sm.setResId(resId);
 					sm.setCol((int) ((maxx - minx)/rackUnitWidth));
 					sm.setRow((int) ((maxy - miny)/rackUnitHeight));
-					sm.setHeight(rackUnitHeight*r*10);
-					sm.setWidth(rackWidth*10);
-					sm.setPosY(-rackUnitHeight*(rs)+rackHeight+60-rackUnitHeight);
+					sm.setHeight(rackUnitHeight*r);
+					sm.setWidth(rackWidth);
+					sm.setPosY((-rackUnitHeight*(rs)+rackHeight)/10+60-rackUnitHeight/10);
 					//sm.setPosX(rackUnitWidth*(cs-1)+10);
-					sm.setPosX(0);
+					sm.setPosX(20);
 					shelves.add(sm);
 					
 					ps2.close();
@@ -155,7 +155,7 @@ public class TransformService {
 					if(rs1.next()) {
 						slot_count = rs1.getInt(1);
 					}
-					double uniteWSlot = sm.getWidth()/slot_count;
+					double uniteWSlot = (sm.getWidth()-100)/slot_count;
 					
 					PreparedStatement ps2 = conn.prepareStatement(sql2);
 					ps2.setString(1, sm.getResId());
@@ -167,19 +167,17 @@ public class TransformService {
 						slm.setSlotId(slotId);
 						slm.setWidth(uniteWSlot);
 						slm.setHeight(sm.getHeight());
+						slots.add(slm);
 					}
 					
+					int i = -1;
 					for (Iterator iterator2 = slots.iterator(); iterator2
 							.hasNext();) {
-						SlotModel slotModel = (SlotModel) iterator2.next();
-						
-					}
-					
-					for (int i = 0; i < slots.size(); i++) {
-						SlotModel slm = (SlotModel) iterator.next();
-						PreparedStatement ps3 = conn.prepareStatement(sql);
-						ps3.setDouble(1, (i+1)*uniteWSlot);
-						ps3.setDouble(2, 0);
+						i++;
+						SlotModel slm = (SlotModel) iterator2.next();
+						PreparedStatement ps3 = conn.prepareStatement(sql3);
+						ps3.setDouble(1, i*uniteWSlot/10+30);
+						ps3.setDouble(2, 25);
 						ps3.setDouble(3, slm.getWidth());
 						ps3.setDouble(4, slm.getHeight());
 						ps3.setString(5, slm.getSlotId());

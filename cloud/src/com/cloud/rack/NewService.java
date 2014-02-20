@@ -11,8 +11,8 @@ import com.cloud.util.DB_RM_RDM_SID_LU_H;
 
 public class NewService {
 	public List<String> getRacks() {
-		//String sql = "select rack_name FROM t_rm_rack a where a.DELETED_FLAG = 0 limit 0, 1000";
-		String sql = "select rack_name FROM t_rm_rack a where a.DELETED_FLAG = 0 and a.rack_name = '经十路三楼联通综合机房/SB11_06'";
+		String sql = "select rack_name FROM t_rm_rack a where a.DELETED_FLAG = 0 limit 0, 100";
+		//String sql = "select rack_name FROM t_rm_rack a where a.DELETED_FLAG = 0 and a.rack_name = '济南共青团2层传输/S北01-06'";
 		java.sql.Connection conn = DB_RM_RDM_SID_LU_H.getConn();
 		List<String> list = new ArrayList<String>();
 		try {

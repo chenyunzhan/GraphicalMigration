@@ -12,7 +12,8 @@ import com.cloud.util.DB_RM_TPS_ADB;
 
 public class NewService {
 	public List<PipeLine> getPipeLines() {
-		String sql = "SELECT SUPPORT_FACILITY_ID, RES_CLASS_ID, SHARDING_ID, SUPPORT_FACILITY_NAME FROM t_rm_support_facility;";
+		//String sql = "SELECT SUPPORT_FACILITY_ID, RES_CLASS_ID, SHARDING_ID, SUPPORT_FACILITY_NAME FROM t_rm_support_facility WHERE SHARDING_ID = 123704 AND RES_CLASS_ID=221 LIMIT 0, 20;";
+		String sql = "SELECT SUPPORT_FACILITY_ID, RES_CLASS_ID, SHARDING_ID, SUPPORT_FACILITY_NAME FROM  t_rm_support_facility WHERE SUPPORT_FACILITY_NAME = '东苑324局001GLU（和源）';";
 		String sql1 = "SELECT d.TOPO_INSTANCE_ID FROM t_rm_topo_instance AS d WHERE d.RES_CLASS_ID = ? AND d.RESOURCE_ID = ? AND d.SHARDING_ID = ?;";
 		Connection conn = DB_RM_RDM_SID_LU_H.getConn();
 		Connection conn1 = DB_RM_TPS_ADB.getConn();
@@ -20,7 +21,6 @@ public class NewService {
 		PreparedStatement ps1 = null;
 		List<PipeLine> list = new ArrayList<PipeLine>();
 		try {
-			PipeLine p = new PipeLine();
 			ps = conn.prepareStatement(sql);
 			String SUPPORT_FACILITY_ID = null;
 			String RES_CLASS_ID = null;
@@ -28,23 +28,24 @@ public class NewService {
 			String SUPPORT_FACILITY_NAME = null;
 			ResultSet rs = ps.executeQuery();
 			while(rs.next()){
+				PipeLine p = new PipeLine();
 				SUPPORT_FACILITY_ID = rs.getString("SUPPORT_FACILITY_ID");
 				RES_CLASS_ID = rs.getString("RES_CLASS_ID");
 				SHARDING_ID = rs.getString("SHARDING_ID");
 				SUPPORT_FACILITY_NAME = rs.getString("SUPPORT_FACILITY_NAME");
+				ps1 = conn1.prepareStatement(sql1);
+				ps1.setString(1, RES_CLASS_ID);
+				ps1.setString(2, SUPPORT_FACILITY_ID);
+				ps1.setString(3, SHARDING_ID);
+				String topoId = null;
+				ResultSet rs1 = ps1.executeQuery();
+				if(rs1.next()) {
+					topoId = rs1.getString("TOPO_INSTANCE_ID");
+					p.setName(SUPPORT_FACILITY_NAME);
+					p.setTopoId(topoId);
+					list.add(p);
+				}
 			}
-			ps1 = conn1.prepareStatement(sql1);
-			ps1.setString(1, RES_CLASS_ID);
-			ps1.setString(2, SUPPORT_FACILITY_ID);
-			ps1.setString(3, SHARDING_ID);
-			String topoId = null;
-			ResultSet rs1 = ps1.executeQuery();
-			if(rs1.next()) {
-				topoId = rs1.getString("TOPO_INSTANCE_ID");
-			}
-			p.setName(SUPPORT_FACILITY_NAME);
-			p.setTopoId(topoId);
-			list.add(p);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
