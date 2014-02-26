@@ -9,12 +9,13 @@ import java.util.Set;
 
 import com.cloud.util.DB_GIS;
 
-public class CovertSengment {
+public class OptCableSegRoute {
 	public void covert() {
 
 		Connection conn2 = DB_GIS.getConn();
 
 			//String sql1 = "SELECT LOCATION_ID AS RES_ID, RES_CLASS_ID, SHARDING_ID, MAINTENANCE_AREA_ID, LOCAL_NETWORK_ID, LONGITUDE, LATITUDE FROM T_RM_LOCATION AS a WHERE a.RES_CLASS_ID = 108;";
+			//查询出该光缆中所有的点
 			String sql1 = "select a.route_seq_num, " +
 				       "a.cable_segment_name, " +
 				       "a.cable_segment_id RES_ID, " +
@@ -35,12 +36,24 @@ public class CovertSengment {
 				    "on a.z_resource_id = c.res_id " +
 				  "where a.cable_segment_id = ? " +
 				 "order by a.route_seq_num";
+			//获取所有点中序列id最大的
 			String sql3 = "select max(a.route_seq_num) maxseq, cable_segment_id  from cloud_temp_opt_cable_seg_route a where a.z_resource_id != 0 group by a.cable_segment_id";
+			String sql4 = "select seq_rm_gis_opt_cable_seg_route.nextval objectId from dual";
 			String cable_segment_id = null;
 			try {
+				
 				PreparedStatement ps3 = conn2.prepareStatement(sql3);
 				ResultSet rs3 = ps3.executeQuery();
 				while(rs3.next()) {
+					
+					String objectId = null;
+					PreparedStatement ps4 = conn2.prepareStatement(sql4);
+					ResultSet rs4 = ps4.executeQuery();
+					while(rs4.next()) {
+						objectId = rs4.getString("objectId");
+					}
+					
+					
 					String maxSeq = rs3.getString("maxseq");
 					cable_segment_id = rs3.getString("cable_segment_id");
 					PreparedStatement ps1 = conn2.prepareStatement(sql1);
@@ -83,30 +96,32 @@ public class CovertSengment {
 							
 						}
 						
-						String tempCount = line.toString().substring(0, line.toString().length()-1);
+						String tempLine = line.toString().substring(0, line.toString().length()-1);
 						Set<String> posSet = new HashSet<String>();
-						String[] strs = tempCount.split(",");
+						String[] strs = tempLine.split(",");
 						for(int i=0; i<strs.length; i++) {
 							posSet.add(strs[i]);
 						}
 						count = posSet.size();
 						
 						if(maxSeq.equals(rs1.getString("route_seq_num")) && count > 1) {
-							String sql2 = "insert into T_RM_GIS_OPT_CABLE_SEG_ROUTE  (OBJECTID,   GIS_RESMAP_ID,   object_label,   RES_ID,   RES_CLASS_ID,   RES_SHARDING_ID,   start_point_res_id,   start_point_res_class_id,   start_point_sharding_id,   end_point_res_id,   end_point_res_class_id,   end_point_sharding_id,   MAINTENANCE_AREA_ID,   MAINTENANCE_AREA_RES_CLASS_ID,   LOCAL_NETWORK_ID,   SHAPE)values  ((select nvl(MAX(objectid), 0) + 1 from T_RM_GIS_OPT_CABLE_SEG_ROUTE),   (select nvl(MAX(objectid), 0) + 1 from T_RM_GIS_OPT_CABLE_SEG_ROUTE), ?,  ?,   ?,   ?,   ?,   ?,   ?,   ?,   ?,   ?,   ?,   102,   ?,   SDE.ST_LINEFROMTEXT('LINESTRING("+ line.toString().substring(0, line.toString().length()-1) +")', 4326))";
+							String sql2 = "insert into T_RM_GIS_OPT_CABLE_SEG_ROUTE  (OBJECTID,   GIS_RESMAP_ID,   object_label,   RES_ID,   RES_CLASS_ID,   RES_SHARDING_ID,   start_point_res_id,   start_point_res_class_id,   start_point_sharding_id,   end_point_res_id,   end_point_res_class_id,   end_point_sharding_id,   MAINTENANCE_AREA_ID,   MAINTENANCE_AREA_RES_CLASS_ID,   LOCAL_NETWORK_ID,   SHAPE)values  (? , ?, ?,  ?,   ?,   ?,   ?,   ?,   ?,   ?,   ?,   ?,   ?,   102,   ?,   SDE.ST_LINEFROMTEXT('LINESTRING("+ tempLine +")', 4326))";
 							System.out.println(sql2);
 							PreparedStatement ps2 = conn2.prepareStatement(sql2);
-							ps2.setString(1, cable_segment_name);
-							ps2.setString(2, resId);
-							ps2.setString(3, resClassId);
-							ps2.setString(4, shardingId);
-							ps2.setString(5, c_a_resource_id);
-							ps2.setString(6, c_a_resource_res_class_id);
-							ps2.setString(7, c_a_resource_sharding_id);
-							ps2.setString(8, c_z_resource_id);
-							ps2.setString(9, c_z_resource_res_class_id);
-							ps2.setString(10, c_z_resource_sharding_id);
-							ps2.setString(11, maintenanceAreaId);
-							ps2.setString(12, localNetworkId);
+							ps2.setString(1, objectId);
+							ps2.setString(2, objectId);
+							ps2.setString(3, cable_segment_name);
+							ps2.setString(4, resId);
+							ps2.setString(5, resClassId);
+							ps2.setString(6, shardingId);
+							ps2.setString(7, c_a_resource_id);
+							ps2.setString(8, c_a_resource_res_class_id);
+							ps2.setString(9, c_a_resource_sharding_id);
+							ps2.setString(10, c_z_resource_id);
+							ps2.setString(11, c_z_resource_res_class_id);
+							ps2.setString(12, c_z_resource_sharding_id);
+							ps2.setString(13, maintenanceAreaId);
+							ps2.setString(14, localNetworkId);
 							//ps2.setString(13, line.toString().substring(0, line.toString().length()-1));
 							int c = ps2.executeUpdate();
 						}
@@ -122,7 +137,7 @@ public class CovertSengment {
 		}
 
 	public static void main(String[] args) {
-		CovertSengment cs = new CovertSengment();
+		OptCableSegRoute cs = new OptCableSegRoute();
 		cs.covert();
 	}
 }

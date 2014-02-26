@@ -25,8 +25,8 @@ public class CableTransPoint {
 			double maxy = 0.0;
 			//求出最小的x和最小的y
 			if (rs.next()) {
-				minx = rs.getDouble("minx");
-				maxy = rs.getDouble("maxy");
+				minx = rs.getDouble("minx")*800/639;
+				maxy = rs.getDouble("maxy")*800/639;
 			}
 			System.out.println("#########################");
 			System.out.println("minx:" + minx);

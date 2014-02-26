@@ -21,19 +21,29 @@ import com.cloud.util.DB_RM_TPS_ADB;
  */
 public class TransformService {
 	
+	//新系统机架宽高
 	private double rackWidth = 6830;
 	private double rackHeight = 15250;
+	//新系统行列数
 	private Integer rackCols = 0;
 	private Integer rackRows = 0;
+	//老系统最大，最小，最大，最小的x，y
 	private double rackMaxX = 0;
 	private double rackMaxY = 0;
 	private double rackMinX = 0;
 	private double rackMinY = 0;
+	//新系统单位宽高
 	private double rackUnitWidth = 0;
 	private double rackUnitHeight = 0;
 	private List<ShelfModel> shelves = new ArrayList<ShelfModel>();
 	
-	
+	/**
+	 * 总的转换逻辑
+	 * @param topInstanceId 拓扑实例id
+	 * @param rackName 机架名称
+	 * @param conn1 老系统数据库链接
+	 * @param conn2 新系统存量库链接
+	 */
 	public void transform(Integer topInstanceId, String rackName, Connection conn1, Connection conn2) {
 		/**
 		 * 
@@ -41,8 +51,10 @@ public class TransformService {
 		 */
 
 		//String sql1 = "select c.mis_id, c.geoloc.SDO_POINT.x x, c.geoloc.SDO_POINT.y y from e_mi_store a inner join e_shelf b on a.mis_id = b.shelf_id inner join e_mi_shelf_panel c on a.map_id = c.map_id where c.layer_name = '模块' and b.shelf_no = ? order by c.geoloc.SDO_POINT.Y, c.geoloc.SDO_POINT.X";
+		//从老系统中获取该机架中所有的机框及坐标信息
 		String sqlx = "select mis_id, labelstr, min(column_value) minx, max(column_value) maxx from (select c.mis_id, c.labelstr, d.*, rownum rn from e_mi_store a, e_shelf b, e_mi_shelf_panel c, table(c.geoloc.SDO_ORDINATES) d where a.map_id = c.map_id and a.mis_id = b.shelf_id and b.shelf_no = ? and c.layer_name = '模块')  where mod(rn, 2) = 1 group by mis_id, labelstr";
 		String sqly = "select mis_id, labelstr, min(column_value) miny, max(column_value) maxy from (select c.mis_id, c.labelstr, d.*, rownum rn from e_mi_store a, e_shelf b, e_mi_shelf_panel c, table(c.geoloc.SDO_ORDINATES) d where a.map_id = c.map_id and a.mis_id = b.shelf_id and b.shelf_no = ? and c.layer_name = '模块')  where mod(rn, 2) = 0 group by mis_id, labelstr";
+		//根据老系统的misid查询新系统的机框
 		String sql2 = "select a.shelf_id, a.upper_resource_id from t_rm_shelf AS a where a.ATTRIBUTE2 = ?";
 		
 		try {
@@ -129,11 +141,20 @@ public class TransformService {
 		
 	}
 	
-	
+	/**
+	 * 更新机框，槽道坐标，宽，高。
+	 * @param shelves 该机架所有的机框
+	 * @param topInstanceId 该机架对应的实例id
+	 * @param conn 新系统存量库链接
+	 */
 	public void updateShelves(List<ShelfModel> shelves, Integer topInstanceId, Connection conn) {
+		//更新机框位置和大小
 		String sql = "UPDATE t_rm_shelf a SET a.POS_X = ?, a.POS_Y = ?, a.TP_WIDTH = ?, a.TP_HEIGHT = ? WHERE a.SHELF_ID = ?;";
+		//计算该机框槽道的个数
 		String sql1 = "SELECT count(*) FROM t_rm_slot where SHELF_ID = ?;";
+		//获取该机框所有的槽道
 		String sql2 = "SELECT SLOT_ID FROM t_rm_slot c WHERE c.SHELF_ID = ? ORDER BY c.SLOT_CODE;";
+		//更新该机框中槽道的位置和大小
 		String sql3 = "UPDATE t_rm_slot a SET a.POS_X = ?, a.POS_Y = ?, a.TP_WIDTH = ?, a.TP_HEIGHT = ? WHERE a.SLOT_ID = ?";
 		//Connection conn = DB_RM_RDM_SID_LU_H.getConn();
 		try {
@@ -192,6 +213,11 @@ public class TransformService {
 		
 	}
 	
+	/**
+	 * 获取新系统机架宽高
+	 * @param rackId 机架id
+	 * @param conn 新系统数据库链接
+	 */
 	public void getRackWH(String rackId, Connection conn) {
 		//Connection conn = DB_RM_RDM_SID.getConn();
 		//String sql2 = "SELECT * FROM t_rm_shelf AS b WHERE b.SHELF_ID = ?;";
@@ -211,7 +237,11 @@ public class TransformService {
 	}
 	
 	
-	
+	/**
+	 * 获取行列数
+	 * @param rackName 机架名称
+	 * @param conn 老系统数据库链接
+	 */
 	public void getRackCR(String rackName, Connection conn) {
 		String sql = "select count(*) from e_mi_store a inner join e_shelf b on a.mis_id = b.shelf_id inner join e_mi_shelf_panel c on a.map_id = c.map_id where c.layer_name = '模块' and b.shelf_no = ? group by c.geoloc.SDO_POINT.Y";
         //Connection conn = DB_OLD_FORMAL.getConn();
@@ -236,7 +266,11 @@ public class TransformService {
 		}
 	}
 	
-	
+	/**
+	 * 获取老系统所有机框中最大的x,y和最小的x,y
+	 * @param rackName 机架名称
+	 * @param conn 老系统数据库链接
+	 */
 	public void getRackMaxXY(String rackName, Connection conn) {
 		String sqlx = "select max(column_value) maxx, min(column_value) minx from (select c.mis_id, c.labelstr, d.*, rownum rn from e_mi_store a, e_shelf b, e_mi_shelf_panel c, table(c.geoloc.SDO_ORDINATES) d where a.map_id = c.map_id and a.mis_id = b.shelf_id and b.shelf_no = ? and c.layer_name = '模块')  where mod(rn, 2) = 1";
 		String sqly = "select max(column_value) maxy, min(column_value) miny from (select c.mis_id, c.labelstr, d.*, rownum rn from e_mi_store a, e_shelf b, e_mi_shelf_panel c, table(c.geoloc.SDO_ORDINATES) d where a.map_id = c.map_id and a.mis_id = b.shelf_id and b.shelf_no = ? and c.layer_name = '模块')  where mod(rn, 2) = 0";

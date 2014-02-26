@@ -5,10 +5,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
-import com.cloud.util.DB_LOCAL;
 import com.cloud.util.DB_OLD_FORMAL;
 import com.cloud.util.DB_RM_RDM_SID_LU_H;
 import com.cloud.util.DB_RM_TPS_ADB;
@@ -18,22 +16,38 @@ import com.cloud.util.DB_RM_TPS_ADB;
  *
  */
 public class BatchRoom {
+	/**
+	 * 机房迁移
+	 * @param mapId 机房图的mapid
+	 */
 	public void batchUpdateRoom(Integer mapId) {
 		//String sql1 = "SELECT * FROM room_mapinfo WHERE minx IS NOT NULL and map_id = " + mapId;
+		//求出该机房图的最小的x,y和最大的x,y
 		String sqlo1y = "select min(column_value) miny, max(column_value) maxy from (select b.*, rownum rn from mi_shelf_planform a, table(a.geoloc.SDO_ORDINATES) b where a.map_id = ?) where mod(rn, 2) = 0";
 		String sqlo1x = "select min(column_value) minx, max(column_value) maxx from (select b.*, rownum rn from mi_shelf_planform a, table(a.geoloc.SDO_ORDINATES) b where a.map_id = ?) where mod(rn, 2) = 1";
+		//获取装饰性元素的最小x,y和最大x,y
 		String sqlo2x = "select min(column_value) minx, max(column_value) maxx, mis_id, layer_name, labelstr from (select b.*, rownum rn, a.mis_id, a.layer_name, a.labelstr, a.object_id from mi_shelf_planform a, table(a.geoloc.SDO_ORDINATES) b where a.map_id = ?) where mod(rn, 2) = 1 group by object_id, mis_id, labelstr, layer_name";
 		String sqlo2y = "select min(column_value) miny, max(column_value) maxy, mis_id, layer_name, labelstr from (select b.*, rownum rn, a.mis_id, a.layer_name, a.labelstr, a.object_id from mi_shelf_planform a, table(a.geoloc.SDO_ORDINATES) b where a.map_id = ?) where mod(rn, 2) = 0 group by object_id, mis_id, labelstr, layer_name";
+		//更新物理设备的位置
 		String sql2 = "UPDATE t_rm_physical_device SET POS_X = ?, POS_Y = ? WHERE ATTRIBUTE2 = ?;";
+		//更新机架的位置
 		String sql3 = "UPDATE t_rm_rack SET POS_X = ?, POS_Y = ? WHERE ATTRIBUTE2 = ?;";
+		//获取机房的名称
 		String sql4 = "select c.room_name map_name from e_mi_store a inner join mi_shelf_planform b on a.map_id=b.map_id inner join s_room c on a.mis_id=c.room_id where a.map_id = ?";
+		//根据机房名称查询出资源id，资源类id，分片id
 		String sql5 = "SELECT a.LOCATION_ID AS RES_ID, a.RES_CLASS_ID, a.SHARDING_ID from t_rm_location AS a WHERE a.LOCATION_NAME = ?;";
+		//获取机房对应的实例id
 		String sql6 = "SELECT a.TOPO_INSTANCE_ID FROM t_rm_topo_instance AS a WHERE a.RES_CLASS_ID = ? AND a.RESOURCE_ID = ? AND a.SHARDING_ID = ?;";
+		//获取拓扑库点表最大的序列号
 		String sql7 = "SELECT SEQ_RM_TPS_ADB_T_RM_TOPO_INST_POINT_TOPO_INST_POINT_ID.nextval";
+		//向拓扑库点表里插入装饰图形
 		String sql8 = "INSERT t_rm_topo_inst_point(TOPO_INST_POINT_ID, TOPO_INSTANCE_ID, TOPOLOGY_SPEC_LAYER_ID, DEFAULT_STYLE_ATTR_VALUE, AUTO_REFRESH_FLAG, NAME, TOPO_CODE, TIP, POS_X, POS_Y, POS_Z, HEIGHT, WIDTH, LENGTH, POINTS, GROUP_EXPANDED_FLAG, PARENT_TOPO_CODE, RES_OBJECT_TYPE_ENUM_ID, RES_CLASS_REL_ID, RES_CLASS_ID, RES_SHARDING_ID, RES_ID, RES_EXPAND_INFO, MAPPING_TOPO_INSTANCE_ID, CREATED_BY, LAST_UPDATED_BY) values (?, ?, 562, '', 0, ?, UUID(), '', ?, ?, NULL, ?, ?, NULL, NULL, 0, '', 44102, -1, 0, 0, 0, 'content.type:vector|vector.shape:rectangle', 0, 0, 0);";
 		//Connection conn1 = DB_LOCAL.getConn();
+		//新系统存量数据库链接
 		Connection conn2 = DB_RM_RDM_SID_LU_H.getConn();
+		//老系统数据库链接
 		Connection conn3 = DB_OLD_FORMAL.getConn();
+		//拓扑库数据库链接
 		Connection conn4 = DB_RM_TPS_ADB.getConn();
 		
 		try {
@@ -199,11 +213,12 @@ public class BatchRoom {
 		
 	}
 	
-	
+	//获取所有机房的mapid
 	public List<Integer> getRoomList() {
 		List<Integer> list = new ArrayList<Integer>();
-		String sql = "SELECT DISTINCT map_id FROM room_mapinfo;";
-		Connection conn = DB_LOCAL.getConn();
+		String sql = "select distinct a.map_id, a.map_name from e_mi_store a inner join mi_shelf_planform b on a.map_id=b.map_id" +
+                           " inner join s_room c on a.mis_id=c.room_id;";
+		Connection conn = DB_OLD_FORMAL.getConn();
 		PreparedStatement ps;
 		try {
 			ps = conn.prepareStatement(sql);

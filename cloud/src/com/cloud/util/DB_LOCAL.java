@@ -19,7 +19,7 @@ public class DB_LOCAL {
             	conn = DriverManager.getConnection("jdbc:mysql://10.4.3.233:3306/d079c75dcb6774864a29fb39f682e0bb0", "ul2C8QGJ0msUJ", "pfOE1ki60EExS");
             }else {
             	//conn = DriverManager.getConnection("jdbc:mysql://10.249.5.35:8066/RM_RDM_SID?&useUnicode=true&characterEncoding=utf-8", "yySID", "adminYY");  
-            	conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/myweb?&useUnicode=true&characterEncoding=utf-8", "root", "");  
+            	conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/myweb?&useUnicode=true&characterEncoding=utf-8", "root", "snow#");  
             	//conn = DriverManager.getConnection("jdbc:oracle:thin:@134.32.21.3:1521:zygl", "zygl", "zygl");  
             }
             if(null != conn) {  
