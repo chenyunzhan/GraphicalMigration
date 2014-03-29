@@ -37,19 +37,27 @@ public class CovertStation {
 		 */
 
 		for (int i = 0; i < sqls.length; i++) {
-
+			//String sql1 = "select a.*, seq_rm_gis_resmap.nextval objectId from cloud_temp_gis_point_test a where a.res_id in (200000002,200002105,200002542,200001358)";
 			String sql1 = "select a.*, seq_rm_gis_resmap.nextval objectId from cloud_temp_gis_point_test a where a.attribute1 BETWEEN 115 AND 125 AND a.attribute2 BETWEEN 34 AND 39";
 			//String sql1 = sqls[i];
 			System.out.println(sql1);
-			String sql2 = "insert into T_RM_GIS_RESMAP (OBJECTID, GIS_RESMAP_ID, RES_ID, RES_CLASS_ID, RES_SHARDING_ID, MAINTENANCE_AREA_ID,MAINTENANCE_AREA_RES_CLASS_ID, LOCAL_NETWORK_ID, SHAPE) values (? , ? , ? , ? , ? , ? , 102 , ? , SDE.ST_POINT(?,?,4326))";
+			String sql2 = "insert into T_RM_GIS_RESMAP (OBJECTID, GIS_RESMAP_ID, OBJECT_LABEL, RES_ID, RES_CLASS_ID, RES_SHARDING_ID, MAINTENANCE_AREA_ID,MAINTENANCE_AREA_RES_CLASS_ID, LOCAL_NETWORK_ID, SHAPE) values (? , ? ,  ?, ? , ? , ? , ? , 102 , ? , SDE.ST_POINT(?,?,4326))";
+			String sql3 = "select count(*) from T_RM_GIS_RESMAP where RES_ID = ? ";
 			String resId = null;
 			try {
 				PreparedStatement ps1 = conn2.prepareStatement(sql1);
 				ResultSet rs1 = ps1.executeQuery();
 				while (rs1.next()) {
 					resId = rs1.getString("RES_ID");
+					PreparedStatement ps3 = conn2.prepareStatement(sql3);
+					ps3.setString(1, resId);
+					ResultSet rs3 = ps3.executeQuery();
+					if(rs3.next() && rs3.getInt(1)>0) {
+						continue;
+					}
 					String resClassId = rs1.getString("RES_CLASS_ID");
 					String shardingId = rs1.getString("SHARDING_ID");
+					String object_label = rs1.getString("SUPPORT_POINT_NAME");
 					String objectId = rs1.getString("objectId");
 					String maintenanceAreaId = rs1
 							.getString("MAINTENANCE_AREA_ID");
@@ -65,16 +73,20 @@ public class CovertStation {
 					PreparedStatement ps2 = conn2.prepareStatement(sql2);
 					ps2.setString(1, objectId);
 					ps2.setString(2, objectId);
-					ps2.setString(3, resId);
-					ps2.setString(4, resClassId);
-					ps2.setString(5, shardingId);
-					ps2.setString(6, maintenanceAreaId);
-					ps2.setString(7, localNetworkId);
-					ps2.setString(8, longitude);
-					ps2.setString(9, latitude);
-					int count = ps2.executeUpdate();
+					ps2.setString(3,object_label);					
+					ps2.setString(4, resId);
+					ps2.setString(5, resClassId);
+					ps2.setString(6, shardingId);
+					ps2.setString(7, maintenanceAreaId);
+					ps2.setString(8, localNetworkId);
+					ps2.setString(9, longitude);
+					ps2.setString(10, latitude);
+					int count = ps2.executeUpdate();					
 					ps2.close();
+					ps3.close();
 				}
+				ps1.close();
+				
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

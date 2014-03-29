@@ -172,7 +172,7 @@
            </partitioning>
     <connection>gisdl</connection>
     <schema/>
-    <table>CLOUD_TEMP_GIS_POINT_TEST_1</table>
+    <table>CLOUD_TEMP_GIS_POINT_TEST</table>
     <commit>1000</commit>
     <truncate>N</truncate>
     <ignore_errors>N</ignore_errors>
