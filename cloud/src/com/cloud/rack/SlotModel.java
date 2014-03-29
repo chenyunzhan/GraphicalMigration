@@ -4,6 +4,8 @@ public class SlotModel {
 	private String slotId;
 	private double width;
 	private double height;
+	private double posX;
+	private double posY;
 	public double getWidth() {
 		return width;
 	}
@@ -36,8 +38,7 @@ public class SlotModel {
 		this.posY = posY;
 	}
 
-	private double posX;
-	private double posY;
+
 
 	public String getSlotId() {
 		return slotId;

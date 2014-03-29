@@ -91,7 +91,7 @@ public class TransformService {
 					ShelfModel sm = new ShelfModel();
 					resId = rs2.getString("shelf_id");
 					rackId = rs2.getString("upper_resource_id");
-					if(rackId != null && rackWidth == 683 && rackHeight == 1525) {
+					if(rackId != null && rackWidth == 6830 && rackHeight == 15250) {
 						getRackWH(rackId, conn2);
 					}
 					rackUnitHeight = rackHeight/rackRows;
@@ -106,11 +106,13 @@ public class TransformService {
 					*/
 					//cs = cs - 1;
 					//rs = rs - 1;
+					//计算机框的位置，在第几行第几列。
 					cs = (int) ((minx-rackMinX)/((rackMaxX-rackMinX)/rackCols));
 					rs = (int) ((miny-rackMinY)/((rackMaxY-rackMinY)/rackRows));
 					//cs = cs + 1;
 					//rs = rs + 1;
 					sm.setResId(resId);
+					//占了几行占了几列
 					sm.setCol((int) ((maxx - minx)/rackUnitWidth));
 					sm.setRow((int) ((maxy - miny)/rackUnitHeight));
 					sm.setHeight(rackUnitHeight*r);
@@ -227,8 +229,8 @@ public class TransformService {
 			ps2.setString(1, rackId);
 			ResultSet rs2 = ps2.executeQuery();
 			while(rs2.next()) {
-				rackWidth = rs2.getString("TP_WIDTH") == null ? 683 : rs2.getDouble("TP_WIDTH");
-				rackHeight = rs2.getString("TP_HEIGHT") == null ? 1525 : rs2.getDouble("TP_HEIGHT");
+				rackWidth = rs2.getString("TP_WIDTH") == null ? 6830 : rs2.getDouble("TP_WIDTH");
+				rackHeight = rs2.getString("TP_HEIGHT") == null ? 15250 : rs2.getDouble("TP_HEIGHT");
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
