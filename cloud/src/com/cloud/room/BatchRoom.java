@@ -123,7 +123,9 @@ public class BatchRoom {
 				Y = Y/4;
 				height = height/4;
 				width = width/2.5;
-				
+				/**
+				 * 添加装饰图元的
+				 */
 				if(misId==0 || misId < 0) {
 					PreparedStatement ps4 = conn3.prepareStatement(sql4);
 					ps4.setString(1, String.valueOf(mapId));
@@ -217,7 +219,7 @@ public class BatchRoom {
 	public List<Integer> getRoomList() {
 		List<Integer> list = new ArrayList<Integer>();
 		String sql = "select distinct a.map_id, a.map_name from e_mi_store a inner join mi_shelf_planform b on a.map_id=b.map_id" +
-                           " inner join s_room c on a.mis_id=c.room_id;";
+                           " inner join s_room c on a.mis_id=c.room_id";
 		Connection conn = DB_OLD_FORMAL.getConn();
 		PreparedStatement ps;
 		try {
@@ -236,6 +238,11 @@ public class BatchRoom {
 	
 	public static void main(String[] args) {
 		BatchRoom br = new BatchRoom();
+		
+		/**
+		 * select distinct a.map_id, a.map_name from e_mi_store a inner join mi_shelf_planform b on a.map_id=b.map_id
+                           inner join s_room c on a.mis_id=c.room_id where b.map_id < 3000;
+		 */
 		br.batchUpdateRoom(822918);
 		/**
 		 * 
